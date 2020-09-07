@@ -12,6 +12,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import static shinjice.SpringSecurity.security.ApplicationUserRole.*;
+
 @Configuration
 @EnableWebSecurity
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
@@ -29,9 +31,11 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+                .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*")
                 .permitAll()
+                .antMatchers("/api/**").hasRole(KLANT.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -44,18 +48,25 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails klantUser = User.builder()
                 .username("klant")
                 .password(passwordEncoder.encode("password"))
-                .roles("KLANT")
+                .roles(KLANT.name())
                 .build();
 
         UserDetails verkoperUser = User.builder()
                 .username("verkoper")
                 .password(passwordEncoder.encode("password"))
-                .roles("VERKOPER")
+                .roles(VERKOPER.name())
+                .build();
+
+        UserDetails administratieUser = User.builder()
+                .username("administratie")
+                .password(passwordEncoder.encode("password"))
+                .roles(ADMINISTRATIE.name())
                 .build();
 
         return new InMemoryUserDetailsManager(
                 klantUser,
-                verkoperUser
+                verkoperUser,
+                administratieUser
         );
 
     }

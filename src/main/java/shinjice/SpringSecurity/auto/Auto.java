@@ -16,4 +16,12 @@ public class Auto {
     public String getAutoModel() {
         return autoModel;
     }
+
+    @Override
+    public String toString() {
+        return "Auto{" +
+                "autoId=" + autoId +
+                ", autoModel='" + autoModel + '\'' +
+                '}';
+    }
 }
