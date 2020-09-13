@@ -3,6 +3,7 @@ package shinjice.SpringSecurity.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -12,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import static shinjice.SpringSecurity.security.ApplicationUserPermission.*;
 import static shinjice.SpringSecurity.security.ApplicationUserRole.*;
 
 @Configuration
@@ -36,6 +38,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "index", "/css/*", "/js/*")
                 .permitAll()
                 .antMatchers("/api/**").hasRole(KLANT.name())
+                .antMatchers(HttpMethod.DELETE,"management/api/**").hasAuthority(VERKOPER_WRITE.name())
+                .antMatchers(HttpMethod.POST,"management/api/**").hasAuthority(VERKOPER_WRITE.name())
+                .antMatchers(HttpMethod.PUT,"management/api/**").hasAuthority(VERKOPER_WRITE.name())
+                .antMatchers("management/api/**").hasAnyRole(VERKOPER.name(), ADMINISTRATIE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
