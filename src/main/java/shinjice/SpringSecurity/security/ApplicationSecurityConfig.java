@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -18,6 +19,7 @@ import static shinjice.SpringSecurity.security.ApplicationUserRole.*;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final PasswordEncoder passwordEncoder;
@@ -33,15 +35,14 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()
+                .csrf().disable()//cross site request forgery
                 .authorizeRequests()
-                .antMatchers("/", "index", "/css/*", "/js/*")
-                .permitAll()
+                .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(KLANT.name())
-                .antMatchers(HttpMethod.DELETE,"management/api/**").hasAuthority(VERKOPER_WRITE.name())
-                .antMatchers(HttpMethod.POST,"management/api/**").hasAuthority(VERKOPER_WRITE.name())
-                .antMatchers(HttpMethod.PUT,"management/api/**").hasAuthority(VERKOPER_WRITE.name())
-                .antMatchers("management/api/**").hasAnyRole(VERKOPER.name(), ADMINISTRATIE.name())
+//                .antMatchers(HttpMethod.DELETE,"management/api/**").hasAuthority(VERKOPER_WRITE.getPermission()) //vervanger  @PreAuthorize
+//                .antMatchers(HttpMethod.POST,"management/api/**").hasAuthority(VERKOPER_WRITE.getPermission())
+//                .antMatchers(HttpMethod.PUT,"management/api/**").hasAuthority(VERKOPER_WRITE.getPermission())
+//                .antMatchers("management/api/**").hasAnyRole(VERKOPER.name(), ADMINISTRATIE.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -54,19 +55,22 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
         UserDetails klantUser = User.builder()
                 .username("klant")
                 .password(passwordEncoder.encode("password"))
-                .roles(KLANT.name())
+         //       .roles(KLANT.name())
+                .authorities(KLANT.getGrandedAuthority())
                 .build();
 
         UserDetails verkoperUser = User.builder()
                 .username("verkoper")
                 .password(passwordEncoder.encode("password"))
-                .roles(VERKOPER.name())
+          //      .roles(VERKOPER.name())
+                .authorities(VERKOPER.getGrandedAuthority())
                 .build();
 
         UserDetails administratieUser = User.builder()
                 .username("administratie")
                 .password(passwordEncoder.encode("password"))
-                .roles(ADMINISTRATIE.name())
+          //      .roles(ADMINISTRATIE.name())
+                .authorities(ADMINISTRATIE.getGrandedAuthority())
                 .build();
 
         return new InMemoryUserDetailsManager(
