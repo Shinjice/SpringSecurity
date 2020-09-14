@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 import static shinjice.SpringSecurity.security.ApplicationUserPermission.*;
 import static shinjice.SpringSecurity.security.ApplicationUserRole.*;
@@ -35,7 +36,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
-                .csrf().disable()//cross site request forgery
+          //     .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()) //cross site request forgery (cookies) alleen met browser / geen service
+          //      .and()
+                .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
                 .antMatchers("/api/**").hasRole(KLANT.name())
@@ -46,7 +49,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated()
                 .and()
-                .httpBasic();
+                //.httpBasic();
+                .formLogin()
+                .loginPage("/login").permitAll();
     }
 
     @Override
