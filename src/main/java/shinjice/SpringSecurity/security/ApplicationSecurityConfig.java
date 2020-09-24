@@ -14,6 +14,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import java.util.concurrent.TimeUnit;
 
 import static shinjice.SpringSecurity.security.ApplicationUserPermission.*;
 import static shinjice.SpringSecurity.security.ApplicationUserRole.*;
@@ -51,8 +54,25 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 //.httpBasic();
                 .formLogin()
-                .loginPage("/login").permitAll()
-                .defaultSuccessUrl("/autos", true);
+                    .loginPage("/login")
+                    .permitAll()
+                    .defaultSuccessUrl("/autos", true)
+                    .passwordParameter("password") //name="password" login page
+                    .usernameParameter("username")
+                .and()
+                .rememberMe()//default to 2 weeks
+                    .tokenValiditySeconds((int)TimeUnit.DAYS.toSeconds(21))
+                    .key("somethingsecured")
+                    .rememberMeParameter("remember-me")
+                .and()
+                .logout()
+                    .logoutUrl("/logout")
+                    .logoutRequestMatcher(new AntPathRequestMatcher("/logout" , "GET")) //only with csrf disabled, will change it to post (less save)
+                    .clearAuthentication(true)
+                    .invalidateHttpSession(true)
+                    .deleteCookies("JSESSIONID", "remember-me")
+                    .logoutSuccessUrl("/login");
+
     }
 
     @Override
